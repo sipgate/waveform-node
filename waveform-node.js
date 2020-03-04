@@ -75,6 +75,8 @@ var getDataFromFFMpeg = function(filepath, options, callback){
 
 	ffmpeg.stderr.on('end', function() {
 		if (gotData){
+			console.log(gotData)
+
 			// Try parse duration and bitrate
 			var pattern = new RegExp(/Duration: ([0-9:.]*),( start: [0-9:.]*,)? bitrate: ([0-9]*) kb/);
 			var pattern2 = new RegExp(/Stream #[0-9:^(eng)]* Audio: [^,]*, ([0-9]*) Hz, ([a-z]*),/);
@@ -92,20 +94,27 @@ var getDataFromFFMpeg = function(filepath, options, callback){
 				duration += val;
 			}
 
-			var channels = matches2[2];
+			var sampleRate = 0
 
-			if(channels !== undefined){
-				if(channels == 'mono'){
-					channels = 1;
-				}else{
-					channels = 2;
+			if(!matches2) {
+				channels = 1;
+			} else {
+				sampleRate = parseInt(matches2[1])
+				var channels = matches2[2];
+	
+				if(channels !== undefined){
+					if(channels == 'mono'){
+						channels = 1;
+					}else{
+						channels = 2;
+					}
 				}
 			}
 
 			var info = {
 				duration: duration,
 				bitRate: parseInt(matches[3]),
-				sampleRate: parseInt(matches2[1]),
+				sampleRate: sampleRate,
 				channels: channels
 			}
 		  	callback(null, samples, info);
